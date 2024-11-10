@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Menu</title>
+</head>
+<body>
+    
+    <div id="container">
+        <h1>Clientes</h1>
+        <input type="text" id="searchMesaInput" placeholder="Pesquisar mesa..." />
+        <button id="addButton">Adicionar Clientes</button>
+        <input type="text" id="itemName" placeholder="Digite o nome da mesa" style="display: none;">
+        <button id="confirmButton" style="display: none;">Confirmar</button>
+        <div id="items"></div>
+    </div>
+
+    <div id="mesaPage" style="display:none;">
+        <h2 id="mesaTitle"></h2>
+        
+        <button id="addMesaItemButton" class="btn btn-2 btn-sep icon-cart">Adicionar Item</button>
+        <button id="deleteMesaButton">Excluir Mesa</button>
+        <button id="backButton">Voltar</button>
+        <div id="mesaItems"></div>
+        <div id="totalValue" class="total-value">Total: R$ 0.00</div>
+        <button onclick="exportarParaTexto()">Exportar para Texto</button>
+        <button onclick="exportarParaPDF()">Exportar para PDF</button>
+        <button onclick="imprimirComprovante()">Imprimir Comprovante</button>
+
+    </div>
+
+    <div id="modal" style="display: none;">
+        <div id="modalContent">
+        <span class="close">&times;</span>
+        <h3>Escolha um item:</h3>
+        <div id="itemOptions"></div>
+        <button id="confirmItemButton">Adicionar Item</button>
+        </div>
+        <input type="text" id="searchInput" onkeyup="searchItems()" placeholder="Pesquisar item...">
+        <div id="itemOptions"></div>
+    </div>  
+</body>
+<script src="itens.js"></script>
+<script src="./script.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</html>
