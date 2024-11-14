@@ -19,7 +19,7 @@ body {
 
 /* Container principal com leve fundo */
 #container {
-  background-image: url(./img/container.jpg);
+  background-image: url(/img/container.jpg);
   background-size: cover;
   background-position: center center;
   width: 90%;
@@ -150,7 +150,7 @@ input[type="text"]:focus {
 
 /* Página de mesas */
 #mesaPage {
-  background-image: url(./img/container.jpg);
+  background-image: url(/img/container.jpg);
   background-size: cover;
     display: none;
     width: 90%;
