@@ -12,6 +12,8 @@ const modal = document.getElementById("modal");
 const itemOptionsContainer = document.getElementById("itemOptions");
 const confirmItemButton = document.getElementById("confirmItemButton");
 const closeModal = document.querySelector(".close");
+const searchMesa = document.getElementById("searchMesaInput");
+const ConfirmConcluir = document.getElementById("Confirm-Concluir");
 
 let currentMesa = null;
 let selectedItem = null;
@@ -26,9 +28,20 @@ window.onload = function () {
 
 addButton.addEventListener("click", function () {
   addButton.style.display = "none";
+  searchMesa.style.display = "none";
   itemNameInput.style.display = "block";
   confirmButton.style.display = "block";
   itemNameInput.focus();
+});
+
+// Evento para esconder o input e mostrar o botão ao clicar fora
+document.addEventListener("click", function (event) {
+  if (!itemNameInput.contains(event.target) && !confirmButton.contains(event.target) && !addButton.contains(event.target)) {
+    itemNameInput.style.display = "none";
+    confirmButton.style.display = "none";
+    addButton.style.display = "block";
+    searchMesa.style.display = "block";
+  }
 });
 
 confirmButton.addEventListener("click", addMesa);
@@ -57,6 +70,7 @@ function addMesa() {
     itemNameInput.value = "";
     itemNameInput.style.display = "none";
     confirmButton.style.display = "none";
+    searchMesa.style.display = "block";
     addButton.style.display = "block";
   } else {
     alert("Por favor, digite um nome para a mesa.");
@@ -65,7 +79,7 @@ function addMesa() {
 
 
 function addMesaToPage(mesaName) {
-  const mesaDiv = document.createElement("div");
+  const mesaDiv = document.createElement("button");
   mesaDiv.classList.add("item");
   mesaDiv.innerText = mesaName;
 
@@ -102,10 +116,10 @@ function openMesaPage() {
   container.style.display = "none";
 }
 
-
 function createItemDiv(item) {
   const itemDiv = document.createElement("div");
   const { nome, unitPrice } = item;
+  
 
   let quantity = item.quantity || 1;
   let priceValue = Number(unitPrice) * quantity;
@@ -118,14 +132,14 @@ function createItemDiv(item) {
   const priceDisplay = document.createElement("span");
   priceDisplay.innerText = `${nome}\n${quantity}x - R$ ${priceValue.toFixed(2)}`;
   itemDiv.appendChild(priceDisplay);
-
+  
   // Atualiza o total inicialmente
   totalValue += priceValue;
   updateTotal();
 
     const decrementButton = document.createElement("button");
     decrementButton.innerText = "-";
-    decrementButton.classList.add("button-small");
+    decrementButton.classList.add("btn-decrementButton");
     decrementButton.onclick = function () {
       if (quantity === 1) {
         // Remove o item se a quantidade for 1
@@ -146,7 +160,7 @@ function createItemDiv(item) {
 
   const incrementButton = document.createElement("button");
   incrementButton.innerText = "+";
-  incrementButton.classList.add("button-small");
+  incrementButton.classList.add("btn-incrementButton");
   incrementButton.onclick = function () {
       quantity += 1;
       priceValue = Number(unitPrice) * quantity;
@@ -188,6 +202,17 @@ function saveItemData(mesaName, itemName, quantity, unitPrice) {
   localStorage.setItem("mesas", JSON.stringify(savedMesas));
 }
 
+
+
+
+
+
+
+
+
+
+
+
 addMesaItemButton.addEventListener("click", function () {
   // Preenche as opções de itens na modal
   itemOptionsContainer.innerHTML = ""; // Limpa opções anteriores
@@ -196,13 +221,26 @@ addMesaItemButton.addEventListener("click", function () {
     optionDiv.innerText = `${item.nome} - R$${item.preco.toFixed(2)}`;
     optionDiv.setAttribute("data-index", index);
     optionDiv.classList.add("item");
-    optionDiv.style.cursor = "pointer";
 
     // Adiciona evento de clique para selecionar item
     optionDiv.addEventListener("click", function () {
       selectedItem = itens[this.getAttribute("data-index")];
-      itemOptionsContainer.querySelectorAll(".item").forEach(i => i.classList.remove("selected"));
-      this.classList.add("selected"); // Destaca item selecionado
+
+      // Remove a classe 'selected' de todos os itens
+      itemOptionsContainer.querySelectorAll(".item").forEach(i => {
+        i.classList.remove("selected");
+        // Esconde o botão "+" de todos os itens
+        const addButton = i.querySelector(".add-button");
+        if (addButton) {
+          addButton.style.display = "none";
+        }
+      });
+
+      // Adiciona a classe 'selected' ao item clicado
+      this.classList.add("selected");
+
+      // Cria ou exibe o botão "+" dentro do item selecionado
+      createAddButton(this); // Passa o item selecionado como contexto
     });
 
     itemOptionsContainer.appendChild(optionDiv);
@@ -211,44 +249,101 @@ addMesaItemButton.addEventListener("click", function () {
   modal.style.display = "flex"; // Mostra modal
 });
 
-// Na função confirmItemButton, adicione a atualização do total ao adicionar um novo item
+
+
+
+// Função para criar ou exibir o botão "+" dentro do item selecionado
+function createAddButton(selectedItemElement) {
+  // Verifica se já existe um botão "+" dentro do item selecionado
+  if (!selectedItemElement.querySelector(".add-button")) {
+    const addButton = document.createElement("button");
+    addButton.classList.add("add-button"); // Classe para o botão
+    addButton.innerText = "+";
+    addButton.style.cursor = "pointer";
+
+    // Evento de clique no botão "+"
+    addButton.addEventListener("click", function () {
+      if (selectedItem) {
+        // Adiciona o item selecionado à mesa (exemplo de ação)
+        addProdutos(selectedItem);
+      }
+    });
+
+    // Adiciona o botão dentro do item selecionado
+    selectedItemElement.appendChild(addButton); // Adiciona o botão ao item selecionado
+  }
+
+  // Exibe o botão "+"
+  selectedItemElement.querySelector(".add-button").style.display = "block";
+}
+
+
+
+//Função para adicionar os itens
+function addProdutos () {
+  if (selectedItem) {
+    const itemName = selectedItem.nome;
+    const unitPrice = Number(selectedItem.preco);
+
+    // Verifica se unitPrice é um número válido
+    if (isNaN(unitPrice)) {
+      console.error("Erro: O preço do item não é um número válido.", selectedItem);
+      alert("Erro: O preço do item não é válido.");
+      return;
+    }
+
+    // Verifica se o item já foi adicionado na mesa atual
+    const savedMesas = JSON.parse(localStorage.getItem("mesas")) || {};
+    const mesaItems = savedMesas[currentMesa] || [];
+    const itemExists = mesaItems.some(item => item.nome === itemName);
+
+    if (itemExists) {
+      alert(`O item "${itemName}" já foi adicionado a esta mesa.`);
+      return;
+    }
+
+    // Adiciona o item se ele não existir
+    const item = { nome: itemName, unitPrice, quantity: 1 };
+    const itemDiv = createItemDiv(item);
+    if (itemDiv) {
+      mesaItemsContainer.appendChild(itemDiv);
+    }
+
+    // Atualiza o armazenamento
+    mesaItems.push(item);
+    savedMesas[currentMesa] = mesaItems;
+    localStorage.setItem("mesas", JSON.stringify(savedMesas));
+
+    selectedItem = null;
+    //modal.style.display = "none";
+    alert("Item adicionado.")
+  } else {
+    alert("Por favor, selecione um item.");
+  }
+}
+
+// Botão Adicionar item
 confirmItemButton.addEventListener("click", function () {
   if (selectedItem) {
-      const itemName = selectedItem.nome;
-      const unitPrice = Number(selectedItem.preco); // Converte para número
-
-      // Verifica se unitPrice é um número válido
-      if (isNaN(unitPrice)) {
-          console.error("Erro: O preço do item não é um número válido.", selectedItem);
-          alert("Erro: O preço do item não é válido.");
-          return; // Interrompe se o preço não é um número
-      }
-
-      const item = { nome: itemName, unitPrice, quantity: 1 }; // Objeto com os valores corretos
-      const itemDiv = createItemDiv(item); // Adiciona o item com a quantidade inicial
-      if (itemDiv) {
-          mesaItemsContainer.appendChild(itemDiv); // Adiciona ao container da mesa
-      }
-
-      const savedMesas = JSON.parse(localStorage.getItem("mesas")) || {};
-      if (!savedMesas[currentMesa]) savedMesas[currentMesa] = [];
-      savedMesas[currentMesa].push(item);
-      localStorage.setItem("mesas", JSON.stringify(savedMesas));
-
-      selectedItem = null; // Reseta o item selecionado
-      modal.style.display = "none"; // Fecha a modal
-  } else {
-      alert("Por favor, selecione um item.");
+    addProdutos(selectedItem);
   }
 });
 
+//Botão de fechar a janela dos itens
 closeModal.addEventListener("click", function () {
   modal.style.display = "none"; // Fecha a modal
   selectedItem = null; // Reseta o item selecionado
 });
 
+
 // Botão de deletar mesa
 deleteMesaButton.addEventListener("click", function () {
+
+  ConfirmConcluir.style.display = 'block'
+  
+});
+
+function ConcluirMesa() {
   if (currentMesa) {
     const savedMesas = JSON.parse(localStorage.getItem("mesas")) || {};
     delete savedMesas[currentMesa]; // Remove mesa
@@ -266,7 +361,13 @@ deleteMesaButton.addEventListener("click", function () {
   } else {
     alert("Nenhuma mesa selecionada para deletar.");
   }
-});
+  
+  CloseConfirmMesa()
+};
+
+function CloseConfirmMesa(){
+  ConfirmConcluir.style.display = 'none'
+}
 
 // Botão de voltar
 backButton.addEventListener("click", function () {
@@ -345,16 +446,6 @@ function exportarParaTexto() {
   link.click();
 }
 
-
-
-
-
-
-
-
-
-
-
 //Exportar PDF
 function exportarParaPDF() {
   const { jsPDF } = window.jspdf;
@@ -393,7 +484,6 @@ function exportarParaPDF() {
   const comprovante = `${mesaTitle}.pdf`;
   doc.save(comprovante);
 };
-
 
 // Comprovante 
 function imprimirComprovante() {
@@ -435,5 +525,30 @@ function imprimirComprovante() {
 };
 
 
+// Adicione o evento ao campo de input de pesquisa
+const searchMesaInput = document.getElementById("searchMesaInput");
+searchMesaInput.addEventListener("input", searchMesas);
 
+// Função pesquisar Mesas pelo nome
+function searchMesas() {
+  const searchTerm = document.getElementById("searchMesaInput").value.toLowerCase();
+  const mesaDivs = itemsContainer.querySelectorAll(".item");
 
+  // Itera por cada mesa e exibe ou oculta com base no termo de busca
+  mesaDivs.forEach(mesaDiv => {
+    const mesaName = mesaDiv.innerText.toLowerCase();
+    if (mesaName.includes(searchTerm)) {
+      mesaDiv.style.display = "block"; // Exibe a mesa se corresponder ao termo
+    } else {
+      mesaDiv.style.display = "none"; // Oculta a mesa se não corresponder
+    }
+  });
+};
+
+//Fechar janela dos Produtos ao clicar fora da tela
+window.addEventListener("click", function (event) {
+  if (event.target === modal) {
+      modal.style.display = "none";
+      selectedItem = null;
+    }
+});
