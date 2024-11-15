@@ -552,3 +552,10 @@ window.addEventListener("click", function (event) {
       selectedItem = null;
     }
 });
+
+// Adiciona o evento dblclick ao contêiner
+itemOptions.addEventListener("dblclick", function (event) {
+  if (event.target.classList.contains("item")) {
+      addProdutos(event.target); // Certifique-se de usar "addProdutos"
+  }
+});
